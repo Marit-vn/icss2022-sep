@@ -41,9 +41,60 @@ MIN: '-';
 MUL: '*';
 ASSIGNMENT_OPERATOR: ':=';
 
+// --- Booleaanse expressies: ---
+NOT: '!';
+EQUALS: '==';
+GREATERTHAN: '>';
+SMALLERTHAN: '<';
 
+// --- Level 0: ---
+stylesheet: variableAssignment* styleRule*;
+styleRule: selector OPEN_BRACE ruleBody CLOSE_BRACE;
+ruleBody: (declaration | ifClause | variableAssignment)+;
 
+classselector: CLASS_IDENT;
+idselector: ID_IDENT; // mogelijk ook color
+tagselector: LOWER_IDENT;
+selector: classselector | idselector | tagselector ;
 
-//--- PARSER: ---
-stylesheet: EOF;
+propertyname: LOWER_IDENT+;
+declaration: propertyname COLON (multiplyable | variableReference | expression) SEMICOLON ;
+
+boolLiteral: TRUE | FALSE;
+colorLiteral: COLOR;
+percentageLiteral: PERCENTAGE;
+pixelLiteral: PIXELSIZE;
+scalarLiteral: SCALAR;
+
+expressiontype: scalarLiteral | pixelLiteral  | percentageLiteral | colorLiteral | boolLiteral; // OR UNDIFINED
+comparable: scalarLiteral | pixelLiteral | percentageLiteral;
+
+// --- Level 1: ---
+variableAssignment: variableReference ASSIGNMENT_OPERATOR expression SEMICOLON;
+variableReference: (CAPITAL_IDENT | LOWER_IDENT)+;
+
+// --- Level 2: ---
+multiplyable: variableReference | expressiontype;
+
+expression: expression multiplyoperation expression | expression (addoperation | substractoperation) expression | multiplyable;
+
+addoperation: PLUS;
+multiplyoperation: MUL;
+substractoperation: MIN;
+
+// --- Level 3: ---
+ifClause: IF BOX_BRACKET_OPEN condition BOX_BRACKET_CLOSE OPEN_BRACE ruleBody CLOSE_BRACE elseClause?;
+elseClause: ELSE OPEN_BRACE ruleBody CLOSE_BRACE;
+
+// --- Uitbreiding booleaanse expressies: ---
+compareOperator: SMALLERTHAN | GREATERTHAN;
+equalsOperator: EQUALS;
+notOperator: NOT;
+
+condition: classic | equals | comparison | notExpression;
+classic: variableReference | boolLiteral;
+notExpression: notOperator classic;
+equals: variableReference equalsOperator multiplyable ;
+comparison: (variableReference | comparable ) compareOperator  (variableReference | comparable);
+
 
